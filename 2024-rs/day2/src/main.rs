@@ -1,6 +1,22 @@
-use std::time::Instant;
+fn main() {
+    lib::submit_p1(p1);
+    lib::submit_p2(p2);
+}
 
-use clap::Parser;
+fn p1(input: &str) -> i64 {
+    let reports = parse_reports(input);
+
+    reports.iter().filter(|report| is_safe(report)).count() as i64
+}
+
+fn p2(input: &str) -> i64 {
+    let reports = parse_reports(input);
+
+    reports
+        .iter()
+        .filter(|report| is_safe_with_tolerance(report))
+        .count() as i64
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Trend {
@@ -8,45 +24,15 @@ enum Trend {
     Decreasing,
 }
 
-fn main() {
-    let args = lib::Args::parse();
-    let input = lib::get_input(&args);
-
-    let start = Instant::now();
-
-    let reports: Vec<Vec<i64>> = input
+fn parse_reports(input: &str) -> Vec<Vec<i64>> {
+    input
         .lines()
         .map(|line| {
             line.split_whitespace()
                 .map(|x| x.parse().expect("Failed to parse the input"))
                 .collect()
         })
-        .collect();
-
-    match args.part {
-        1 => {
-            let result = p1(&reports);
-            let end = start.elapsed().as_micros();
-            println!("Result for part 1: {result} (🚀 {end} us)");
-        }
-        2 => {
-            let result = p2(&reports);
-            let end = start.elapsed().as_micros();
-            println!("Result for part 2: {result} (🚀 {end} us)");
-        }
-        _ => unreachable!(),
-    }
-}
-
-fn p1(reports: &[Vec<i64>]) -> i64 {
-    reports.iter().filter(|report| is_safe(report)).count() as i64
-}
-
-fn p2(reports: &[Vec<i64>]) -> i64 {
-    reports
-        .iter()
-        .filter(|report| is_safe_with_tolerance(report))
-        .count() as i64
+        .collect()
 }
 
 fn is_safe(report: &[i64]) -> bool {
@@ -87,4 +73,27 @@ fn is_safe_with_tolerance(report: &[i64]) -> bool {
     }
 
     generate_variations(report).iter().any(|r| is_safe(r))
+}
+
+#[cfg(test)]
+mod test {
+    use crate::{p1, p2};
+
+    #[test]
+    fn test_part1() {
+        let input = lib::get_input_dbg();
+
+        let result = p1(&input);
+
+        assert_eq!(result, 2);
+    }
+
+    #[test]
+    fn test_part2() {
+        let input = lib::get_input_dbg();
+
+        let result = p2(&input);
+
+        assert_eq!(result, 2);
+    }
 }
